@@ -1,9 +1,12 @@
 defmodule AdventOfCode2023.Day02 do
+  @moduledoc false
+
   require Logger
 
-  def run() do
+  def run do
     input =
-      File.read!("lib/advent_of_code2023/inputs/02/part1.txt")
+      "lib/advent_of_code2023/inputs/02/part1.txt"
+      |> File.read!()
       |> String.trim()
       |> String.split("\n", trim: true)
 
@@ -60,7 +63,8 @@ defmodule AdventOfCode2023.Day02 do
       String.split(line, ":", parts: 2, trim: true)
 
     all_subsets =
-      String.split(cube_subsets, ";", trim: true)
+      cube_subsets
+      |> String.split(";", trim: true)
       |> Enum.map(&String.trim/1)
       |> Enum.map(&String.split(&1, ~r/, ?/))
 
@@ -70,14 +74,12 @@ defmodule AdventOfCode2023.Day02 do
   defp map_to_highest_colors(subsets) do
     subsets
     |> Enum.map(fn subset ->
-      subset
-      |> Enum.map(fn subset_entry ->
+      Map.new(subset, fn subset_entry ->
         [raw_amount, color] = String.split(subset_entry, " ", trim: true)
         parsed_amount = String.to_integer(raw_amount)
 
         {color, parsed_amount}
       end)
-      |> Enum.into(%{})
     end)
     |> Enum.reduce(%{}, fn mapped_subset, acc ->
       mapped_subset

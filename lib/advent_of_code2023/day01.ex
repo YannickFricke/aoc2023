@@ -1,11 +1,14 @@
 defmodule AdventOfCode2023.Day01 do
-  def run() do
+  @moduledoc false
+
+  def run do
     part1()
     part2()
   end
 
-  defp part1() do
-    File.read!("lib/advent_of_code2023/inputs/01/part1.txt")
+  defp part1 do
+    "lib/advent_of_code2023/inputs/01/part1.txt"
+    |> File.read!()
     |> String.trim()
     |> String.split("\n", trim: true)
     |> Enum.map(&process_digits/1)
@@ -13,8 +16,9 @@ defmodule AdventOfCode2023.Day01 do
     |> IO.inspect(label: "Result part 1")
   end
 
-  defp part2() do
-    File.read!("lib/advent_of_code2023/inputs/01/part1.txt")
+  defp part2 do
+    "lib/advent_of_code2023/inputs/01/part1.txt"
+    |> File.read!()
     |> String.trim()
     |> String.split("\n", trim: true)
     |> Enum.map(&replace_stringified_digits/1)
