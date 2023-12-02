@@ -20,6 +20,8 @@ defmodule AdventOfCode2023.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    []
+    [
+      {:styler, "~> 0.10", only: [:dev, :test], runtime: false}
+    ]
   end
 end
