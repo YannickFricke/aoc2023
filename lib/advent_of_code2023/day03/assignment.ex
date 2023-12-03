@@ -48,8 +48,8 @@ defmodule AdventOfCode2023.Day03.Assignment do
 
     Logger.info("Sum of part numbers: #{sum_of_part_numbers}")
 
-    dump_to_file(parsed_lines)
-    dump_to_console(parsed_lines, valid_part_numbers)
+    # dump_to_file(parsed_lines)
+    # dump_to_console(parsed_lines, valid_part_numbers)
   end
 
   defp part2(lines) do
