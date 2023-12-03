@@ -14,12 +14,13 @@ defmodule AdventOfCode2023.Day03.Assignment do
       |> String.split("\n", trim: true)
 
     part1(input)
+    part2(input)
   end
 
-  def part1(lines) do
+  defp part1(lines) do
     parsed_lines =
       lines
-      |> Enum.with_index(1)
+      |> Enum.with_index()
       |> Enum.map(&AdventOfCode2023.Day03.ParsedLine.parse_line/1)
 
     possible_positions =
@@ -32,10 +33,11 @@ defmodule AdventOfCode2023.Day03.Assignment do
       parsed_lines
       |> Enum.flat_map(& &1.entries)
       |> Enum.filter(&(&1.type == :number))
-      |> Enum.filter(fn %LineEntry{line_index: entry_line_index, start_index: entry_start_index, content: entry_content} ->
+      |> Enum.filter(fn %LineEntry{line_index: entry_line_index, start_index: entry_start_index, content: entry_content} =
+                          entry ->
         Enum.any?(possible_positions, fn {position_line_index, position_index} ->
           entry_line_index == position_line_index and position_index >= entry_start_index and
-            position_index <= entry_start_index + String.length(entry_content)
+            position_index < entry_start_index + String.length(entry_content)
         end)
       end)
 
@@ -50,26 +52,82 @@ defmodule AdventOfCode2023.Day03.Assignment do
     dump_to_console(parsed_lines, valid_part_numbers)
   end
 
-  defp calculate_possible_positions(symbol_entries) do
-    Enum.flat_map(symbol_entries, fn %LineEntry{line_index: line_index, start_index: start_index} ->
-      [
-        # diagonal top left
-        {line_index - 1, start_index - 1},
-        # diagonal top left
-        {line_index - 1, start_index + 1},
-        # Adjacent left
-        {line_index, start_index - 1},
-        # Adjacent right
-        {line_index, start_index + 1},
-        # diagonal bottom left
-        {line_index + 1, start_index - 1},
-        # diagonal bottom left
-        {line_index + 1, start_index + 1}
-      ]
-    end)
+  defp part2(lines) do
+    parsed_lines =
+      lines
+      |> Enum.with_index()
+      |> Enum.map(&AdventOfCode2023.Day03.ParsedLine.parse_line/1)
+
+    possible_positions =
+      parsed_lines
+      |> Enum.flat_map(& &1.entries)
+      |> Enum.filter(&(&1.type == :symbol and &1.content == "*"))
+      |> calculate_possible_positions(false)
+
+    numeric_entries =
+      parsed_lines
+      |> Enum.flat_map(& &1.entries)
+      |> Enum.filter(&(&1.type == :number))
+
+    result =
+      possible_positions
+      |> Enum.map(fn positions_entry ->
+        positions_entry
+        |> Enum.map(fn {position_line_index, position_index} ->
+          Enum.filter(numeric_entries, fn %LineEntry{
+                                            line_index: entry_line_index,
+                                            start_index: entry_start_index,
+                                            content: entry_content
+                                          } ->
+            entry_line_index == position_line_index and position_index >= entry_start_index and
+              position_index < entry_start_index + String.length(entry_content)
+          end)
+        end)
+        |> Enum.uniq()
+        |> List.flatten()
+      end)
+      |> Enum.filter(&(length(&1) >= 2))
+      |> Enum.map(fn entries ->
+        entries
+        |> Enum.map(&String.to_integer(&1.content))
+        |> Enum.reduce(1, &(&1 * &2))
+      end)
+      |> Enum.sum()
+
+    Logger.info("Part 2: #{result}")
   end
 
-  defp dump_to_file(parsed_lines, file_name \\ "dump.txt") do
+  defp calculate_possible_positions(symbol_entries, flatten \\ true) do
+    possible_positions =
+      Enum.map(symbol_entries, fn %LineEntry{line_index: line_index, start_index: start_index} = entry ->
+        [
+          # diagonal top left
+          {line_index - 1, start_index - 1},
+          # Adjacent top
+          {line_index - 1, start_index},
+          # diagonal top right
+          {line_index - 1, start_index + 1},
+          # Adjacent left
+          {line_index, start_index - 1},
+          # Adjacent right
+          {line_index, start_index + 1},
+          # diagonal bottom left
+          {line_index + 1, start_index - 1},
+          # Adjacent bottom
+          {line_index + 1, start_index},
+          # diagonal bottom right
+          {line_index + 1, start_index + 1}
+        ]
+      end)
+
+    if flatten do
+      List.flatten(possible_positions)
+    else
+      possible_positions
+    end
+  end
+
+  defp dump_to_file(parsed_lines, file_name \\ "day03_dump.txt") do
     file_contents =
       Enum.map_join(parsed_lines, "\n\n", &AdventOfCode2023.Day03.ParsedLine.dump/1)
 
@@ -92,7 +150,7 @@ defmodule AdventOfCode2023.Day03.Assignment do
             :symbol ->
               {acc <>
                  dots_before_entry <>
-                 IO.ANSI.white_background() <> IO.ANSI.black() <> line_entry_content <> IO.ANSI.reset(),
+                 IO.ANSI.yellow() <> line_entry_content <> IO.ANSI.reset(),
                acc_without_ansi <> dots_before_entry <> line_entry_content}
 
             :number ->
