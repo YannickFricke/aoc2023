@@ -3,7 +3,6 @@ defmodule AdventOfCode2023.Day03.Assignment do
   alias AdventOfCode2023.Day03.LineEntry
   alias AdventOfCode2023.Day03.ParsedLine
 
-  require IEx
   require Logger
 
   def run do
